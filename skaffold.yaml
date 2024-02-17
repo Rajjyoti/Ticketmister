@@ -1,0 +1,13 @@
+apiVersion: skaffold/v4beta9
+kind: Config
+metadata:
+  name: ticketmister
+build:
+  artifacts:
+    - image: rajjyoti/auth
+      context: auth
+      docker:
+        dockerfile: Dockerfile
+manifests:
+  rawYaml:
+    - infra/k8s/auth-depl.yaml
