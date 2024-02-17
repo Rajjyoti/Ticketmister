@@ -3,3 +3,4 @@
 
 # Ignore Node.js build artifacts
 node_modules/
+**/node_modules/
