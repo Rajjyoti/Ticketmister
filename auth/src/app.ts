@@ -4,8 +4,7 @@ import {json} from 'body-parser'
 import cookieSession from 'cookie-session'
 
 import { userRouter } from './routes/user'
-import { errorHandler } from './middlewares/errorHandler'
-import { NotFoundError } from './errors/notFoundError'
+import { errorHandler, NotFoundError } from '@rjdtickets/commons'
 
 const app = express()
 app.set('trust proxy', true)
