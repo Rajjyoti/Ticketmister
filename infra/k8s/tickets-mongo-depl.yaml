@@ -15,6 +15,13 @@ spec:
       containers:
         - name: tickets-mongo
           image: mongo
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/ticket
+      volumes:
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
 
 ---
 apiVersion: v1
