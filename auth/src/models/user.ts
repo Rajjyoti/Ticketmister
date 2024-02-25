@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Password } from "../services/password";
 
 interface UserAttrs {
-    email: string,
+    email: string
     password: string
 }
 
