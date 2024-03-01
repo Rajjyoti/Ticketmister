@@ -2,6 +2,9 @@ import express, {Request, Response} from 'express'
 import { body } from 'express-validator'
 import { NotAuthorisedError, NotFoundError, requireAuth, validateRequest } from '@rjdtickets/commons'
 import { Ticket } from '../models/ticket'
+import { TicketCreatedPublisher } from '../events/publishers/ticketCreatedPublisher'
+import { natsWrapper } from '../natsWrapper'
+import { TicketUpdatedPublisher } from '../events/publishers/ticketUpdatedPublisher'
 
 const router = express.Router()
 
@@ -23,6 +26,12 @@ router.post('/api/tickets', requireAuth, [
     })
 
     await ticket.save()
+    new TicketCreatedPublisher(natsWrapper.client).publish({
+        id: ticket.id,
+        title: ticket.title,
+        price: ticket.price,
+        userId: ticket.userId
+    })
 
     res.status(201).send(ticket)
 
@@ -69,6 +78,12 @@ router.put('/api/tickets/:id', requireAuth, [
     })
 
     await ticket.save()
+    new TicketUpdatedPublisher(natsWrapper.client).publish({
+        id: ticket.id,
+        title: ticket.title,
+        price: ticket.price,
+        userId: ticket.userId
+    })
 
     res.send(ticket) //default 200
 })
