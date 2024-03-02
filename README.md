@@ -8,3 +8,7 @@
 * Ticket prices can be edited if they are not locked
 
   <img width="526" alt="yt" src="https://github.com/Rajjyoti/Ticketmister/assets/44893239/790ccb13-f147-43a1-8473-7e43ed771076">
+
+
+*Something to look into:
+  When we send an event for ticket creation after saving it, we need to make sure the event is published to ensure data integrity. To do this, we can try creating an event db that keeps track if   an event is published or not. If not, there will be a service that will publish it.  
