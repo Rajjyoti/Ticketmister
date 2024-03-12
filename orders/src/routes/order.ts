@@ -1,10 +1,14 @@
 import express, {Request, Response} from 'express'
 import { body } from 'express-validator'
-import { NotAuthorisedError, NotFoundError, requireAuth, validateRequest } from '@rjdtickets/commons'
+import { BadRequestError, NotAuthorisedError, NotFoundError, OrderStatus, requireAuth, validateRequest } from '@rjdtickets/commons'
 import { natsWrapper } from '../natsWrapper'
 import mongoose from 'mongoose'
+import { Ticket } from '../models/ticket'
+import { Order } from '../models/order'
 
 const router = express.Router()
+
+const EXPIRATION_WINDOW_SECONDS = 15*60
 
 //Create Order
 router.post('/api/orders', requireAuth, [
@@ -14,23 +18,31 @@ router.post('/api/orders', requireAuth, [
         .custom((input: string) => mongoose.Types.ObjectId.isValid(input))
         .withMessage('TicketId is required')
 ], validateRequest, async (req: Request, res: Response) => {
-    const {title, price} = req.body
+    const {ticketId} = req.body
 
-    const ticket = Ticket.build({
-        title,
-        price,
-        userId: req.currentUser!.id
+    const ticket = await Ticket.findById(ticketId)
+    if (!ticket) {
+        throw new NotFoundError()
+    }
+
+    const isReserved = await ticket.isReserved()
+    if (isReserved) {
+        throw new BadRequestError('Ticket is already reserved')
+    }
+
+    const expiration = new Date()
+    expiration.setSeconds(expiration.getSeconds() + EXPIRATION_WINDOW_SECONDS)
+
+    const order = Order.build({
+        userId: req.currentUser!.id,
+        status: OrderStatus.Created,
+        expiresAt: expiration,
+        ticket
     })
 
-    await ticket.save()
-    new TicketCreatedPublisher(natsWrapper.client).publish({
-        id: ticket.id,
-        title: ticket.title,
-        price: ticket.price,
-        userId: ticket.userId
-    })
+    await order.save()
 
-    res.status(201).send(ticket)
+    res.status(201).send(order)
 
 })
 
@@ -52,39 +64,8 @@ router.get('/api/tickets/:id', requireAuth, async (req: Request, res: Response) 
 })
 
 //Delete Order
-router.delete('/api/orders/:orderId', requireAuth, [
-    body('title')
-        .not()
-        .isEmpty()
-        .withMessage('Title is required'),
-    body('price')
-        .isFloat({gt: 0})
-        .withMessage('Price must be greater than 0')
-], validateRequest, async (req: Request, res: Response) => {
-    const ticket = await Ticket.findById(req.params.id)
-
-    if (!ticket) {
-        throw new NotFoundError()
-    }
-
-    if (ticket.userId !== req.currentUser!.id) {
-        throw new NotAuthorisedError()
-    }
-
-    ticket.set({
-        title: req.body.title,
-        price: req.body.price
-    })
-
-    await ticket.save()
-    new TicketUpdatedPublisher(natsWrapper.client).publish({
-        id: ticket.id,
-        title: ticket.title,
-        price: ticket.price,
-        userId: ticket.userId
-    })
-
-    res.send(ticket) //default 200
+router.delete('/api/orders/:orderId', validateRequest, async (req: Request, res: Response) => {
+    return null
 })
 
 export {router as orderRouter}
