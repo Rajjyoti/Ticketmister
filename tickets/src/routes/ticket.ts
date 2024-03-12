@@ -50,7 +50,7 @@ router.get('/api/tickets/:id', requireAuth, async (req: Request, res: Response) 
         throw new NotFoundError()
     }
 
-    res.send(ticket) //default 200
+    res.send(ticket)
 })
 
 router.put('/api/tickets/:id', requireAuth, [
