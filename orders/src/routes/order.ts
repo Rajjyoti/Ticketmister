@@ -46,26 +46,43 @@ router.post('/api/orders', requireAuth, [
 
 })
 
-//Show orders
-router.get('/api/tickets', requireAuth, async (req: Request, res: Response) => {
-    const tickets = await Ticket.find({})
+//Show orders for a user
+router.get('/api/orders', requireAuth, async (req: Request, res: Response) => {
+    const orders = await Order.find({
+        userId: req.currentUser!.id
+    }).populate('ticket')
 
-    res.send(tickets) //default 200
+    res.send(orders)
 })
 
-router.get('/api/tickets/:id', requireAuth, async (req: Request, res: Response) => {
-    const ticket = await Ticket.findById(req.params.id)
+//Show orders by id
+router.get('/api/orders/:id', requireAuth, async (req: Request, res: Response) => {
+    const order = await Order.findById(req.params.id).populate('ticket')
 
-    if (!ticket) {
+    if (!order) {
         throw new NotFoundError()
     }
+    if (order.userId !== req.currentUser!.id) {
+        throw new NotAuthorisedError();
+    }
 
-    res.send(ticket) //default 200
+    res.send(order)
 })
 
-//Delete Order
-router.delete('/api/orders/:orderId', validateRequest, async (req: Request, res: Response) => {
-    return null
+//Cancel Order
+router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response) => {
+    const order = await Order.findById(req.params.id)
+    if (!order) {
+        throw new NotFoundError()
+    }
+    if (order.userId !== req.currentUser!.id) {
+        throw new NotAuthorisedError()
+    }
+
+    order.status = OrderStatus.Cancelled
+    await order.save()
+
+    res.send(order)
 })
 
 export {router as orderRouter}
