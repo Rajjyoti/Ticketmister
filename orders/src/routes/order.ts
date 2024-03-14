@@ -5,6 +5,8 @@ import { natsWrapper } from '../natsWrapper'
 import mongoose from 'mongoose'
 import { Ticket } from '../models/ticket'
 import { Order } from '../models/order'
+import { OrderCreatedPublisher } from '../events/publishers/orderCreatedPublisher'
+import { OrderCancelledPublisher } from '../events/publishers/orderCancelledPublisher'
 
 const router = express.Router()
 
@@ -42,6 +44,17 @@ router.post('/api/orders', requireAuth, [
 
     await order.save()
 
+    new OrderCreatedPublisher(natsWrapper.client).publish({
+        id: order.id,
+        status: order.status,
+        userId: order.userId,
+        expiresAt: order.expiresAt.toISOString(),
+        ticket: {
+            id: ticket.id,
+            price: ticket.price
+        }
+    })
+
     res.status(201).send(order)
 
 })
@@ -71,7 +84,7 @@ router.get('/api/orders/:id', requireAuth, async (req: Request, res: Response) =
 
 //Cancel Order
 router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response) => {
-    const order = await Order.findById(req.params.id)
+    const order = await Order.findById(req.params.id).populate('ticket')
     if (!order) {
         throw new NotFoundError()
     }
@@ -81,6 +94,13 @@ router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response
 
     order.status = OrderStatus.Cancelled
     await order.save()
+
+    new OrderCancelledPublisher(natsWrapper.client).publish({
+        id: order.id,
+        ticket: {
+            id: order.ticket.id
+        }
+    })
 
     res.send(order)
 })
