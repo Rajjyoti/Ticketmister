@@ -49,6 +49,7 @@ router.post('/api/orders', requireAuth, [
         status: order.status,
         userId: order.userId,
         expiresAt: order.expiresAt.toISOString(),
+        version: order.version,
         ticket: {
             id: ticket.id,
             price: ticket.price
@@ -97,6 +98,7 @@ router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response
 
     new OrderCancelledPublisher(natsWrapper.client).publish({
         id: order.id,
+        version: order.version,
         ticket: {
             id: order.ticket.id
         }
