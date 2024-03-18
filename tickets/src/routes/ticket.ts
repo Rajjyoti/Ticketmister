@@ -30,7 +30,8 @@ router.post('/api/tickets', requireAuth, [
         id: ticket.id,
         title: ticket.title,
         price: ticket.price,
-        userId: ticket.userId
+        userId: ticket.userId,
+        version: ticket.version
     })
 
     res.status(201).send(ticket)
@@ -82,7 +83,8 @@ router.put('/api/tickets/:id', requireAuth, [
         id: ticket.id,
         title: ticket.title,
         price: ticket.price,
-        userId: ticket.userId
+        userId: ticket.userId,
+        version: ticket.version
     })
 
     res.send(ticket) //default 200
