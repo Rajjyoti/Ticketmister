@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@rjdtickets/commons": "^1.0.8",
+    "@rjdtickets/commons": "^1.0.9",
     "@types/bull": "^4.10.0",
     "bull": "^4.12.2",
     "node-nats-streaming": "^0.2.6",
