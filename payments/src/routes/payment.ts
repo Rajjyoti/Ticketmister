@@ -2,10 +2,10 @@ import express, {Request, Response} from 'express'
 import { body } from 'express-validator'
 import { BadRequestError, NotAuthorisedError, NotFoundError, OrderStatus, requireAuth, validateRequest } from '@rjdtickets/commons'
 import { natsWrapper } from '../natsWrapper'
-import mongoose from 'mongoose'
 import { Order } from '../models/order'
 import { stripe } from '../stripe'
 import { Payment } from '../models/payment'
+import { PaymentCreatedPublisher } from '../events/publishers/paymentCreatedPublisher'
 
 const router = express.Router()
 
@@ -45,7 +45,15 @@ router.post('/api/payments', requireAuth, [
     })
     await payment.save()
 
-    res.send({success: true})
+    new PaymentCreatedPublisher(natsWrapper.client).publish({
+        id: payment.id,
+        orderId: order.id,
+        stripeId: paymentIntent.id
+    })
+
+    res.status(201).send({
+        paymentId: payment.id
+    })
 
 })
 

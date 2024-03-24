@@ -92,6 +92,9 @@ router.delete('/api/orders/:id', requireAuth, async (req: Request, res: Response
     if (order.userId !== req.currentUser!.id) {
         throw new NotAuthorisedError()
     }
+    if (order.status === OrderStatus.Complete) {
+        throw new BadRequestError('Order is already completed')
+    }
 
     order.status = OrderStatus.Cancelled
     await order.save()

@@ -1,4 +1,4 @@
-import { Listener, NotFoundError, Subjects, TicketUpdatedEvent } from "@rjdtickets/commons";
+import { Listener, Subjects, TicketUpdatedEvent } from "@rjdtickets/commons";
 import { Message } from "node-nats-streaming";
 import { queueGroupName } from "./queueGroupName";
 import { Ticket } from "../../models/ticket";
