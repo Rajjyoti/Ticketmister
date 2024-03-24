@@ -5,6 +5,7 @@ import cookieSession from 'cookie-session'
 
 
 import { errorHandler, NotFoundError, currentUser } from '@rjdtickets/commons'
+import { paymentRouter } from './routes/payment'
 
 const app = express()
 app.set('trust proxy', true)
@@ -15,6 +16,8 @@ app.use(cookieSession({
 }))
 
 app.use(currentUser)
+
+app.use(paymentRouter)
 
 app.all('*', async(req, res) => {
     throw new NotFoundError()
