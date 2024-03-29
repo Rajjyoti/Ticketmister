@@ -39,13 +39,13 @@ router.post('/api/tickets', requireAuth, [
 })
 
 //get non reserved tickets
-router.get('/api/tickets', requireAuth, async (req: Request, res: Response) => {
+router.get('/api/tickets', async (req: Request, res: Response) => {
     const tickets = await Ticket.find({orderId: undefined})
 
     res.send(tickets) //default 200
 })
 
-router.get('/api/tickets/:id', requireAuth, async (req: Request, res: Response) => {
+router.get('/api/tickets/:id', async (req: Request, res: Response) => {
     const ticket = await Ticket.findById(req.params.id)
 
     if (!ticket) {

@@ -1,7 +1,8 @@
 import useRequest from "../../hooks/use-request"
+import Router from "next/router"
 
 const TicketShow = ({ticket}) => {
-    const {doRequest, onSuccess} = useRequest({
+    const {doRequest, errors} = useRequest({
         url: '/api/orders',
         method: 'post',
         body: {
@@ -14,6 +15,7 @@ const TicketShow = ({ticket}) => {
         <h1>{ticket.title}</h1>
         <h4>Price: {ticket.price}</h4>
         <button onClick = {() => doRequest()} className="btn btn-primary">Purchase</button>
+        {errors}
     </div>
 }
 
